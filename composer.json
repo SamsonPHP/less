@@ -5,7 +5,7 @@
   "require": {
     "samsonphp/event": "1.*",
     "samsonos/php_core": "*",
-    "samsonos/php_resourcer": "*",
+    "samsonphp/resource": "*",
     "leafo/lessphp": "*"
   },
   "require-dev": {
