@@ -2,8 +2,8 @@
 namespace samsonphp\less;
 
 use samson\core\ExternalModule;
-use samson\resourcer\ResourceRouter;
 use samsonphp\event\Event;
+use samsonphp\resource\Router;
 
 /**
  * SamsonPHP LESS compiler module.
@@ -19,7 +19,7 @@ class Module extends ExternalModule
     /** SamsonFramework load preparation stage handler */
     public function prepare()
     {
-        Event::subscribe(ResourceRouter::EVENT_CREATED, array($this, 'renderer'));
+        Event::subscribe(Router::EVENT_CREATED, array($this, 'renderer'));
 
         $this->less = new \lessc;
 
