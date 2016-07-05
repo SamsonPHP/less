@@ -3,7 +3,7 @@
     @opacityPercentage : @_opacity * 100;
     opacity: @_opacity;     
     -ms-filter: ~"progid:DXImageTransform.Microsoft.Alpha(Opacity=@{opacityPercentage})";
-    filter: ~"alpha(opacity = @{opacityPercentage})";    
+    //filter: ~"alpha(opacity = @{opacityPercentage})";
 }
 
 .gradient ( @startColor: #eee, @endColor: white) 
@@ -82,7 +82,7 @@
   background-image: -o-linear-gradient(left, @startColor, @endColor); // Opera 11.10
   background-image: linear-gradient(to right, @startColor, @endColor); // Standard, IE10
   background-repeat: repeat-x;
-  filter: e(%("progid:DXImageTransform.Microsoft.gradient(startColorstr='%d', endColorstr='%d', GradientType=1)",argb(@startColor),argb(@endColor))); // IE9 and down
+  //filter: e(%("progid:DXImageTransform.Microsoft.gradient(startColorstr='%d', endColorstr='%d', GradientType=1)",argb(@startColor),argb(@endColor))); // IE9 and down
 }
 
 .vertical_gradient(@startColor: #555, @endColor: #333) {
@@ -93,5 +93,5 @@
   background-image: -o-linear-gradient(top, @startColor, @endColor); // Opera 11.10
   background-image: linear-gradient(to bottom, @startColor, @endColor); // Standard, IE10
   background-repeat: repeat-x;
-  filter: e(%("progid:DXImageTransform.Microsoft.gradient(startColorstr='%d', endColorstr='%d', GradientType=0)",argb(@startColor),argb(@endColor))); // IE9 and down
+  //filter: e(%("progid:DXImageTransform.Microsoft.gradient(startColorstr='%d', endColorstr='%d', GradientType=0)",argb(@startColor),argb(@endColor))); // IE9 and down
 }
