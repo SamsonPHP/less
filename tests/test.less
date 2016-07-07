@@ -1,9 +1,18 @@
+@var: green;
+@var2: 123px;
+
+.mixin (@param : red) {
+  color: @param;
+}
+
 .parentClass {
-  color: green;
+  color: @var;
   &.blue {
     color: blue;
   }
   .nestedClass {
     border: 1px solid;
+    .mixin(white);
   }
 }
+

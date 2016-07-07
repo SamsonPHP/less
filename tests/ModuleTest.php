@@ -25,6 +25,13 @@ class ModuleTest extends \PHPUnit_Framework_TestCase
         $this->module = new Module(__DIR__, $map, $core);
     }
 
+    public function testAnalyzer()
+    {
+        $this->module->prepare();
+
+        $this->module->analyzer(__DIR__ . '/test.less', 'less');
+    }
+
     public function testGenerator()
     {
         $this->module->prepare();
@@ -38,6 +45,7 @@ class ModuleTest extends \PHPUnit_Framework_TestCase
 }
 .parentClass .nestedClass {
   border: 1px solid;
+  color: white;
 }
 
 CSS;
