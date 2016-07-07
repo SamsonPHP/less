@@ -38,7 +38,7 @@ class ModuleTest extends \PHPUnit_Framework_TestCase
 
         $results = $this->module->analyzer(__DIR__ . '/variables.less', 'css');
 
-        $this->assertEquals(null, $results);
+        $this->assertEquals([], $results);
     }
 
     public function testGenerator()

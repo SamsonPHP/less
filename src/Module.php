@@ -70,6 +70,8 @@ class Module extends ExternalModule
 
             return [$this->variables, $this->mixins];
         }
+
+        return [];
     }
 
     /**
