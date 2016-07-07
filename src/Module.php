@@ -16,7 +16,7 @@ class Module extends ExternalModule
     /** LESS variable declaration pattern */
     const P_VARIABLE_DECLARATION = '/^(\s|\n)?\@(?<name>[^\s:]+)\:(?<value>[^;]+);/';
     /** LESS mixin declaration pattern */
-    const P_MIXIN_DECLARATION = '/^\s*\.(?<name>[^\s(]+)\s*(?<params>\([^)]+\))?\s*(?<code>\{[^}]+\})/';
+    const P_MIXIN_DECLARATION = '/^\s*\.(?<name>[^\s(]+)\s*(?<params>\([^)]+\))\s*(?<code>\{[^}]+\})/';
 
     /** @var \lessc LESS compiler */
     protected $less;
@@ -82,6 +82,9 @@ class Module extends ExternalModule
     public function compiler($resource, &$extension, &$output)
     {
         if ($extension === 'less') {
+            $text = implode("\n", $this->variables) . "\n"
+                . implode("\n", $this->mixins) . "\n"
+                . file_get_contents($resource);
             try {
                 // Read updated CSS resource file and compile it with mixins
                 $output = $this->less->compile(
@@ -95,7 +98,7 @@ class Module extends ExternalModule
             } catch (\Exception $e) {
                 //$errorFile = 'cache/error_resourcer'.microtime(true).'.less';
                 //file_put_contents($errorFile, $output);
-                throw new \Exception('Failed compiling LESS[' . $resource . ']:' . "\n" . $e->getMessage());
+                throw new \Exception('Failed compiling LESS in "' . $resource . '":' . "\n" . $e->getMessage());
             }
         }
     }
