@@ -14,18 +14,15 @@ use samsonphp\resource\Router;
 class Module extends ExternalModule
 {
     /** LESS variable declaration pattern */
-    const P_VARIABLE_DECLARATION = '/^(\s|\n)\@(?<name>[^\s:]+)\:(?<value>[^;]+)/';
+    const P_VARIABLE_DECLARATION = '/^(\s|\n)?\@(?<name>[^\s:]+)\:(?<value>[^;]+);/';
     /** LESS mixin declaration pattern */
-    const P_MIXIN_DECLARATION = '/^\s*\.(?<name>[^\s]+)\s*(?<params>\([^)]+\))\s*(?<code>\{[^}]+\})/';
+    const P_MIXIN_DECLARATION = '/^\s*\.(?<name>[^\s(]+)\s*(?<params>\([^)]+\))?\s*(?<code>\{[^}]+\})/';
 
     /** @var \lessc LESS compiler */
     protected $less;
 
     /** @var array Collection of LESS variables */
     protected $variables = [];
-
-    /** @var array Collection of files where variables are defined */
-    protected $variableFiles = [];
 
     /** @var array Collection of LESS mixins */
     protected $mixins = [];
@@ -46,8 +43,6 @@ class Module extends ExternalModule
      *
      * @param string $resource  Resource full path
      * @param string $extension Resource extension
-     *
-     * @throws \Exception
      */
     public function analyzer($resource, $extension)
     {
@@ -58,15 +53,9 @@ class Module extends ExternalModule
                 // Gather variables in collection key => value
                 for ($i = 0, $max = count($matches['name']); $i < $max; $i++) {
                     if (!array_key_exists($matches['name'][$i], $this->variables)) {
-                        $this->variables[$matches['name'][$i]] = $matches['value'][$i];
-                        $this->variableFiles[$matches['name'][$i]] = $resource;
-                    } else {
-                        throw new \Exception('Duplicate LESS variable found "' . $matches['name'][$i] . '" in "' . $resource . '", previosly defined in "' . $this->variableFiles[$matches['name'][$i]] . '"');
+                        $this->variables[$matches['name'][$i]] = $matches[0][$i];
                     }
                 }
-
-                // Set LESS variables
-                $this->less->setVariables($this->variables);
             }
 
             // Find variable declaration
@@ -76,6 +65,8 @@ class Module extends ExternalModule
                     $this->mixins[$matches['name'][$i]] = $matches[0][$i];
                 }
             }
+
+            return [$this->variables, $this->mixins];
         }
     }
 
@@ -93,7 +84,12 @@ class Module extends ExternalModule
         if ($extension === 'less') {
             try {
                 // Read updated CSS resource file and compile it with mixins
-                $output = $this->less->compile(implode("\n", $this->mixins) . file_get_contents($resource));
+                $output = $this->less->compile(
+                    implode("\n", $this->variables)
+                    . implode("\n", $this->mixins)
+                    . file_get_contents($resource)
+                );
+
                 // Switch extension
                 $extension = 'css';
             } catch (\Exception $e) {

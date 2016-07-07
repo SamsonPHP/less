@@ -23,19 +23,26 @@ class ModuleTest extends \PHPUnit_Framework_TestCase
         $map = new ResourceMap(__DIR__);
         $core = new Core($map);
         $this->module = new Module(__DIR__, $map, $core);
+        $this->module->prepare();
     }
 
     public function testAnalyzer()
     {
-        $this->module->prepare();
+        $results = $this->module->analyzer(__DIR__ . '/variables.less', 'less');
 
-        $this->module->analyzer(__DIR__ . '/test.less', 'less');
+        $this->assertArrayHasKey('var', $results[0]);
+
+        $results = $this->module->analyzer(__DIR__ . '/mixins.less', 'less');
+
+        $this->assertArrayHasKey('mixin', $results[1]);
+
+        $results = $this->module->analyzer(__DIR__ . '/variables.less', 'css');
+
+        $this->assertEquals(null, $results);
     }
 
     public function testGenerator()
     {
-        $this->module->prepare();
-
         $equals = <<<'CSS'
 .parentClass {
   color: green;
@@ -52,6 +59,8 @@ CSS;
 
         $content = '';
         $extension = 'less';
+        $this->module->analyzer(__DIR__ . '/variables.less', 'less');
+        $this->module->analyzer(__DIR__ . '/mixins.less', 'less');
         $this->module->compiler(__DIR__ . '/test.less', $extension, $content);
 
         $this->assertEquals($equals, $content);
