@@ -13,13 +13,28 @@ use samsonphp\resource\Router;
  */
 class Module extends ExternalModule
 {
+    /** LESS variable declaration pattern */
+    const P_VARIABLE_DECLARATION = '/^(\s|\n)\@(?<name>[^\s:]+)\:(?<value>[^;]+)/';
+    /** LESS mixin declaration pattern */
+    const P_MIXIN_DECLARATION = '/^\s*\.(?<name>[^\s]+)\s*(?<params>\([^)]+\))\s*(?<code>\{[^}]+\})/';
+
     /** @var \lessc LESS compiler */
     protected $less;
+
+    /** @var array Collection of LESS variables */
+    protected $variables = [];
+
+    /** @var array Collection of files where variables are defined */
+    protected $variableFiles = [];
+
+    /** @var array Collection of LESS mixins */
+    protected $mixins = [];
 
     /** SamsonFramework load preparation stage handler */
     public function prepare()
     {
-        Event::subscribe(Router::EVENT_CREATED, array($this, 'renderer'));
+        Event::subscribe(Router::E_RESOURCE_PRELOAD, [$this, 'analyzer']);
+        Event::subscribe(Router::E_RESOURCE_COMPILE, [$this, 'compiler']);
 
         $this->less = new \lessc;
 
@@ -27,25 +42,64 @@ class Module extends ExternalModule
     }
 
     /**
-     * New resource file update handler.
+     * LESS resource analyzer.
      *
-     * @param string $type    Resource type(extension)
-     * @param string $content Resource content
-     * @param string $file    LESS file path
+     * @param string $resource  Resource full path
+     * @param string $extension Resource extension
      *
      * @throws \Exception
      */
-    public function renderer($type, &$content, $file = '')
+    public function analyzer($resource, $extension)
     {
-        // If CSS resource has been updated
-        if ($type === 'css') {
+        if ($extension === 'less') {
+            $contents = file_get_contents($resource);
+            // Find variable declaration
+            if (preg_match_all(self::P_VARIABLE_DECLARATION, $contents, $matches)) {
+                // Gather variables in collection key => value
+                for ($i = 0, $max = count($matches['name']); $i < $max; $i++) {
+                    if (!array_key_exists($matches['name'][$i], $this->variables)) {
+                        $this->variables[$matches['name'][$i]] = $matches['value'][$i];
+                        $this->variableFiles[$matches['name'][$i]] = $resource;
+                    } else {
+                        throw new \Exception('Duplicate LESS variable found "' . $matches['name'][$i] . '" in "' . $resource . '", previosly defined in "' . $this->variableFiles[$matches['name'][$i]] . '"');
+                    }
+                }
+
+                // Set LESS variables
+                $this->less->setVariables($this->variables);
+            }
+
+            // Find variable declaration
+            if (preg_match_all(self::P_MIXIN_DECLARATION, $contents, $matches)) {
+                // Gather variables in collection key => value
+                for ($i = 0, $max = count($matches[0]); $i < $max; $i++) {
+                    $this->mixins[$matches['name'][$i]] = $matches[0][$i];
+                }
+            }
+        }
+    }
+
+    /**
+     * LESS resource compiler.
+     *
+     * @param string $resource  Resource full path
+     * @param string $extension Resource extension
+     * @param string $output    Compiled output resource content
+     *
+     * @throws \Exception
+     */
+    public function compiler($resource, &$extension, &$output)
+    {
+        if ($extension === 'less') {
             try {
-                // Read updated CSS resource file and compile it
-                $content = $this->less->compile($content);
+                // Read updated CSS resource file and compile it with mixins
+                $output = $this->less->compile(implode("\n", $this->mixins) . file_get_contents($resource));
+                // Switch extension
+                $extension = 'css';
             } catch (\Exception $e) {
                 //$errorFile = 'cache/error_resourcer'.microtime(true).'.less';
-                //file_put_contents($errorFile, $content);
-                throw new \Exception('Failed compiling LESS['.$file.']:'."\n".$e->getMessage());
+                //file_put_contents($errorFile, $output);
+                throw new \Exception('Failed compiling LESS[' . $resource . ']:' . "\n" . $e->getMessage());
             }
         }
     }
