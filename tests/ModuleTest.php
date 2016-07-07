@@ -29,17 +29,6 @@ class ModuleTest extends \PHPUnit_Framework_TestCase
     {
         $this->module->prepare();
 
-        $content = <<<'LESS'
-.parentClass {
-    color:green;
-    &.blue {
-    color:blue;
-    }
-    .nestedClass{
-        border:1px solid;
-    }
-}
-LESS;
         $equals = <<<'CSS'
 .parentClass {
   color: green;
@@ -53,7 +42,9 @@ LESS;
 
 CSS;
 
-        $this->module->renderer('css', $content, 'test');
+        $content = '';
+        $extension = 'less';
+        $this->module->compiler(__DIR__ . '/test.less', $extension, $content);
 
         $this->assertEquals($equals, $content);
     }
@@ -64,18 +55,8 @@ CSS;
 
         $this->module->prepare();
 
-        $content = <<<'LESS'
-.parentClass {
-    color:green; !important;
-    &.blue {
-    color:blue;
-    }
-    .nestedClass{
-        border:1px solid;
-    }
-}
-LESS;
-
-        $this->module->renderer('css', $content, 'test');
+        $content = '';
+        $extension = 'less';
+        $this->module->compiler(__DIR__ . '/wrong.less', $extension, $content);
     }
 }
