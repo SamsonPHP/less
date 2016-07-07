@@ -43,6 +43,8 @@ class Module extends ExternalModule
      *
      * @param string $resource  Resource full path
      * @param string $extension Resource extension
+     *
+     * @return array Variables and mixins collection
      */
     public function analyzer($resource, $extension)
     {
