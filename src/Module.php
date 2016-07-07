@@ -14,9 +14,9 @@ use samsonphp\resource\Router;
 class Module extends ExternalModule
 {
     /** LESS variable declaration pattern */
-    const P_VARIABLE_DECLARATION = '/^(\s|\n)?\@(?<name>[^\s:]+)\:(?<value>[^;]+);/';
+    const P_VARIABLE_DECLARATION = '/^\s*\@(?<name>[^\s:]+)\s*\:\s*(?<value>[^;]+);/m';
     /** LESS mixin declaration pattern */
-    const P_MIXIN_DECLARATION = '/^\s*\.(?<name>[^\s(]+)\s*(?<params>\([^)]+\))\s*(?<code>\{[^}]+\})/';
+    const P_MIXIN_DECLARATION = '/^\s*\.(?<name>[^\s(:]+)\s*(?<params>\([^)]+\))\s*(?<code>\{.+\})/m';
 
     /** @var \lessc LESS compiler */
     protected $less;
@@ -60,8 +60,10 @@ class Module extends ExternalModule
                 }
             }
 
-            // Find variable declaration
-            if (preg_match_all(self::P_MIXIN_DECLARATION, $contents, $matches)) {
+            // TODO: Hack that files with mixin should be separated and have "mixin" in their name
+            if (strpos($resource, 'mixin') !== false) {
+                $this->mixins[$resource] = $contents;
+            } elseif (preg_match_all(self::P_MIXIN_DECLARATION, $contents, $matches)) {
                 // Gather variables in collection key => value
                 for ($i = 0, $max = count($matches[0]); $i < $max; $i++) {
                     $this->mixins[$matches['name'][$i]] = $matches[0][$i];

@@ -34,7 +34,7 @@ class ModuleTest extends \PHPUnit_Framework_TestCase
 
         $results = $this->module->analyzer(__DIR__ . '/mixins.less', 'less');
 
-        $this->assertArrayHasKey('mixin', $results[1]);
+        $this->assertEquals(count($results[1]), 1);
 
         $results = $this->module->analyzer(__DIR__ . '/variables.less', 'css');
 
