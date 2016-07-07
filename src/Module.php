@@ -82,14 +82,11 @@ class Module extends ExternalModule
     public function compiler($resource, &$extension, &$output)
     {
         if ($extension === 'less') {
-            $text = implode("\n", $this->variables) . "\n"
-                . implode("\n", $this->mixins) . "\n"
-                . file_get_contents($resource);
             try {
                 // Read updated CSS resource file and compile it with mixins
                 $output = $this->less->compile(
-                    implode("\n", $this->variables)
-                    . implode("\n", $this->mixins)
+                    implode("\n", $this->variables) . "\n"
+                    . implode("\n", $this->mixins) . "\n"
                     . file_get_contents($resource)
                 );
 
