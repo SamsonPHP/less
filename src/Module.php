@@ -43,30 +43,33 @@ class Module extends ExternalModule
      *
      * @param string $resource  Resource full path
      * @param string $extension Resource extension
+     * @param string $content LESS code
      *
      * @return array Variables and mixins collection
      */
-    public function analyzer($resource, $extension)
+    public function analyzer($resource, $extension, &$content)
     {
         if ($extension === 'less') {
-            $contents = file_get_contents($resource);
             // Find variable declaration
-            if (preg_match_all(self::P_VARIABLE_DECLARATION, $contents, $matches)) {
+            if (preg_match_all(self::P_VARIABLE_DECLARATION, $content, $matches)) {
                 // Gather variables in collection key => value
                 for ($i = 0, $max = count($matches['name']); $i < $max; $i++) {
                     if (!array_key_exists($matches['name'][$i], $this->variables)) {
                         $this->variables[$matches['name'][$i]] = $matches[0][$i];
+                        $content = str_replace($matches[0][$i], '', $content);
                     }
                 }
             }
 
             // TODO: Hack that files with mixin should be separated and have "mixin" in their name
             if (strpos($resource, 'mixin') !== false) {
-                $this->mixins[$resource] = $contents;
-            } elseif (preg_match_all(self::P_MIXIN_DECLARATION, $contents, $matches)) {
+                $this->mixins[$resource] = $content;
+                $content = '';
+            } elseif (preg_match_all(self::P_MIXIN_DECLARATION, $content, $matches)) {
                 // Gather variables in collection key => value
                 for ($i = 0, $max = count($matches[0]); $i < $max; $i++) {
                     $this->mixins[$matches['name'][$i]] = $matches[0][$i];
+                    $content = str_replace($matches[0][$i], '', $content);
                 }
             }
 
@@ -81,19 +84,19 @@ class Module extends ExternalModule
      *
      * @param string $resource  Resource full path
      * @param string $extension Resource extension
-     * @param string $output    Compiled output resource content
+     * @param string $content   Compiled output resource content
      *
      * @throws \Exception
      */
-    public function compiler($resource, &$extension, &$output)
+    public function compiler($resource, &$extension, &$content)
     {
         if ($extension === 'less') {
             try {
                 // Read updated CSS resource file and compile it with mixins
-                $output = $this->less->compile(
+                $content = $this->less->compile(
                     implode("\n", $this->variables) . "\n"
                     . implode("\n", $this->mixins) . "\n"
-                    . file_get_contents($resource)
+                    . $content
                 );
 
                 // Switch extension
