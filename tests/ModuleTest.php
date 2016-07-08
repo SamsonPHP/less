@@ -28,15 +28,17 @@ class ModuleTest extends \PHPUnit_Framework_TestCase
 
     public function testAnalyzer()
     {
-        $results = $this->module->analyzer(__DIR__ . '/variables.less', 'less');
+        $variables = file_get_contents(__DIR__ . '/variables.less');
+        $results = $this->module->analyzer(__DIR__ . '/variables.less', 'less', $variables);
 
         $this->assertArrayHasKey('var', $results[0]);
 
-        $results = $this->module->analyzer(__DIR__ . '/mixins.less', 'less');
+        $mixins = file_get_contents(__DIR__ . '/mixins.less');
+        $results = $this->module->analyzer(__DIR__ . '/mixins.less', 'less', $mixins);
 
-        $this->assertEquals(count($results[1]), 1);
+        $this->assertArrayHasKey('var', $results[0]);
 
-        $results = $this->module->analyzer(__DIR__ . '/variables.less', 'css');
+        $results = $this->module->analyzer(__DIR__ . '/variables.less', 'css', $variables);
 
         $this->assertEquals([], $results);
     }
@@ -57,10 +59,13 @@ class ModuleTest extends \PHPUnit_Framework_TestCase
 
 CSS;
 
-        $content = '';
+        $content = file_get_contents(__DIR__ . '/test.less');
         $extension = 'less';
-        $this->module->analyzer(__DIR__ . '/variables.less', 'less');
-        $this->module->analyzer(__DIR__ . '/mixins.less', 'less');
+        $variables = file_get_contents(__DIR__ . '/variables.less');
+        $mixins = file_get_contents(__DIR__ . '/mixins.less');
+
+        $this->module->analyzer(__DIR__ . '/variables.less', 'less', $variables);
+        $this->module->analyzer(__DIR__ . '/mixins.less', 'less', $mixins);
         $this->module->compiler(__DIR__ . '/test.less', $extension, $content);
 
         $this->assertEquals($equals, $content);
@@ -72,7 +77,7 @@ CSS;
 
         $this->module->prepare();
 
-        $content = '';
+        $content = file_get_contents(__DIR__ . '/wrong.less');;
         $extension = 'less';
         $this->module->compiler(__DIR__ . '/wrong.less', $extension, $content);
     }
