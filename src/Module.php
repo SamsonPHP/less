@@ -27,15 +27,47 @@ class Module extends ExternalModule
     /** @var array Collection of LESS mixins */
     protected $mixins = [];
 
+    /** @var string Path to cached mixins & variables */
+    protected $cachedLESS;
+
+    /** @var string Cached LESS code */
+    protected $lessCode;
+
     /** SamsonFramework load preparation stage handler */
     public function prepare()
     {
         Event::subscribe(Router::E_RESOURCE_PRELOAD, [$this, 'analyzer']);
         Event::subscribe(Router::E_RESOURCE_COMPILE, [$this, 'compiler']);
+        Event::subscribe(Router::E_FINISHED, [$this, 'finished']);
 
         $this->less = new \lessc;
 
+        // Create path to LESS
+        $this->cachedLESS = $this->cache_path.'mixins.less';
+
+        // Read cached less mixins and variables
+        if (file_exists($this->cachedLESS)) {
+            $this->lessCode = file_get_contents($this->cachedLESS);
+        }
+
         return true;
+    }
+
+    /**
+     * Create LESS variables and mixins cache file.
+     */
+    public function finished()
+    {
+        $this->lessCode .= implode("\n", $this->variables) . "\n"
+            . implode("\n", $this->mixins) . "\n";
+
+        // Create cache path
+        $path = dirname($this->cachedLESS);
+        if (!file_exists($path)) {
+            mkdir($path, 0777, true);
+        }
+
+        file_put_contents($this->cachedLESS, $this->lessCode);
     }
 
     /**
@@ -96,6 +128,7 @@ class Module extends ExternalModule
                 $content = $this->less->compile(
                     implode("\n", $this->variables) . "\n"
                     . implode("\n", $this->mixins) . "\n"
+                    . $this->lessCode
                     . $content
                 );
 
