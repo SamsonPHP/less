@@ -18,6 +18,9 @@ class Module extends ExternalModule
     /** LESS mixin declaration pattern */
     const P_MIXIN_DECLARATION = '/^\s*\.(?<name>[^\s(:]+)\s*(?<params>\([^)]+\))\s*(?<code>\{.+\})/m';
 
+    /** @var string Path to cached mixins & variables */
+    public $cachedLESS;
+
     /** @var \lessc LESS compiler */
     protected $less;
 
@@ -26,9 +29,6 @@ class Module extends ExternalModule
 
     /** @var array Collection of LESS mixins */
     protected $mixins = [];
-
-    /** @var string Path to cached mixins & variables */
-    protected $cachedLESS;
 
     /** @var string Cached LESS code */
     protected $lessCode;

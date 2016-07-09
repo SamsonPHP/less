@@ -26,6 +26,12 @@ class ModuleTest extends \PHPUnit_Framework_TestCase
         $this->module->prepare();
     }
 
+    public function testFinished()
+    {
+        $this->module->cachedLESS = __DIR__.'/mixins.less';
+        $this->module->prepare();
+    }
+
     public function testAnalyzer()
     {
         $variables = file_get_contents(__DIR__ . '/variables.less');
