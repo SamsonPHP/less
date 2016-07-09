@@ -16,7 +16,7 @@ class Module extends ExternalModule
     /** LESS variable declaration pattern */
     const P_VARIABLE_DECLARATION = '/^\s*\@(?<name>[^\s:]+)\s*\:\s*(?<value>[^;]+);/m';
     /** LESS mixin declaration pattern */
-    const P_MIXIN_DECLARATION = '/^\s*\.(?<name>[^\s(:]+)\s*(?<params>\([^)]+\))\s*(?<code>\{.+\})/m';
+    const P_MIXIN_DECLARATION = '/^\s*\.(?<name>[^\s(:]+)\s*(?<params>\([^)]+\))\s*(?<code>\{[^}]+\})/m';
 
     /** @var string Path to cached mixins & variables */
     public $cachedLESS;
@@ -43,7 +43,7 @@ class Module extends ExternalModule
         $this->less = new \lessc;
 
         // Create path to LESS
-        $this->cachedLESS = $this->cache_path.'mixins.less';
+        $this->cachedLESS = strlen($this->cachedLESS) ? $this->cachedLESS : $this->cache_path.'mixins.less';
 
         // Read cached less mixins and variables
         if (file_exists($this->cachedLESS)) {
