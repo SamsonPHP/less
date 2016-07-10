@@ -11,7 +11,6 @@ use samsonphp\resource\Router;
  * TODO: Nested mixin parsing to remove file name mixin hack
  *
  * @author Vitaly Iegorov <egorov@samsonos.com>
- * @author Nikita Kotenko <kotenko@samsonos.com>
  */
 class Module extends ExternalModule
 {
