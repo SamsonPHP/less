@@ -9,6 +9,7 @@ use samsonphp\resource\Router;
  * SamsonPHP LESS compiler module.
  *
  * TODO: Nested mixin parsing to remove file name mixin hack
+ * TODO: Switch to independent generic file system manager
  *
  * @author Vitaly Iegorov <egorov@samsonos.com>
  */
@@ -72,6 +73,58 @@ class Module extends ExternalModule
     }
 
     /**
+     * Parse LESS variable definition and remove them from code.
+     *
+     * @param string $content Source code for parsing LESS variables
+     *
+     * @return string Parsed code without LESS variables
+     */
+    protected function parseVariables($content)
+    {
+        // Find variable declaration
+        if (preg_match_all(self::P_VARIABLE_DECLARATION, $content, $matches)) {
+            // Gather variables in collection key => value
+            for ($i = 0, $max = count($matches['name']); $i < $max; $i++) {
+                // Check for duplicates
+                if (!array_key_exists($matches['name'][$i], $this->variables)) {
+                    // Store variable by name => definition
+                    $this->variables[$matches['name'][$i]] = $matches[0][$i];
+                    // Remove variable declaration from content
+                    $content = str_replace($matches[0][$i], '', $content);
+                }
+            }
+        }
+
+        return $content;
+    }
+
+    /**
+     * Parse LESS mixins definition and remove them from code.
+     *
+     * @param string $resource LESS resource path
+     * @param string $content Source code for parsing LESS mixins
+     *
+     * @return string Parsed code without LESS mixins
+     */
+    protected function parseMixins($resource, $content)
+    {
+        // TODO: Hack that files with mixin should be separated and have "mixin" in their name
+        if (strpos($resource, 'mixin') !== false) {
+            $this->mixins[$resource] = $content;
+            // As we consider whole file has only mixins - clear content
+            $content = '';
+        } elseif (preg_match_all(self::P_MIXIN_DECLARATION, $content, $matches)) {
+            // Gather variables in collection key => value
+            for ($i = 0, $max = count($matches[0]); $i < $max; $i++) {
+                $this->mixins[$matches['name'][$i]] = $matches[0][$i];
+                $content = str_replace($matches[0][$i], '', $content);
+            }
+        }
+
+        return $content;
+    }
+
+    /**
      * LESS resource analyzer.
      *
      * @param string $resource  Resource full path
@@ -83,28 +136,8 @@ class Module extends ExternalModule
     public function analyzer($resource, $extension, &$content)
     {
         if ($extension === 'less') {
-            // Find variable declaration
-            if (preg_match_all(self::P_VARIABLE_DECLARATION, $content, $matches)) {
-                // Gather variables in collection key => value
-                for ($i = 0, $max = count($matches['name']); $i < $max; $i++) {
-                    if (!array_key_exists($matches['name'][$i], $this->variables)) {
-                        $this->variables[$matches['name'][$i]] = $matches[0][$i];
-                        $content = str_replace($matches[0][$i], '', $content);
-                    }
-                }
-            }
-
-            // TODO: Hack that files with mixin should be separated and have "mixin" in their name
-            if (strpos($resource, 'mixin') !== false) {
-                $this->mixins[$resource] = $content;
-                $content = '';
-            } elseif (preg_match_all(self::P_MIXIN_DECLARATION, $content, $matches)) {
-                // Gather variables in collection key => value
-                for ($i = 0, $max = count($matches[0]); $i < $max; $i++) {
-                    $this->mixins[$matches['name'][$i]] = $matches[0][$i];
-                    $content = str_replace($matches[0][$i], '', $content);
-                }
-            }
+            $content = $this->parseVariables($content);
+            $content = $this->parseMixins($resource, $content);
 
             return [$this->variables, $this->mixins];
         }
