@@ -8,6 +8,8 @@ use samsonphp\resource\Router;
 /**
  * SamsonPHP LESS compiler module.
  *
+ * TODO: Nested mixin parsing to remove file name mixin hack
+ *
  * @author Vitaly Iegorov <egorov@samsonos.com>
  * @author Nikita Kotenko <kotenko@samsonos.com>
  */
