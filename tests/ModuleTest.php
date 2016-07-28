@@ -31,31 +31,8 @@ class ModuleTest extends \PHPUnit_Framework_TestCase
         $this->module->cachedLESS = __DIR__.'/cache/cache.less';
         $this->module->prepare();
     }
-
-    public function testFinished()
-    {
-        $this->module->cachedLESS = __DIR__.'/cache/cache.less';
-        unlink($this->module->cachedLESS);
-        rmdir(dirname($this->module->cachedLESS));
-        $this->module->finished();
-    }
-
-    public function testAnalyzer()
-    {
-        $variables = file_get_contents(__DIR__ . '/variables.less');
-        $results = $this->module->analyzer(__DIR__ . '/variables.less', 'less', $variables);
-
-        $this->assertArrayHasKey('var', $results[0]);
-
-        $mixins = file_get_contents(__DIR__ . '/mixins.less');
-        $results = $this->module->analyzer(__DIR__ . '/mixins.less', 'less', $mixins);
-
-        $this->assertArrayHasKey('var', $results[0]);
-
-        $results = $this->module->analyzer(__DIR__ . '/variables.less', 'css', $variables);
-
-        $this->assertEquals([], $results);
-    }
+    
+    
 
     public function testGenerator()
     {
@@ -75,11 +52,6 @@ CSS;
 
         $content = file_get_contents(__DIR__ . '/test.less');
         $extension = 'less';
-        $variables = file_get_contents(__DIR__ . '/variables.less');
-        $mixins = file_get_contents(__DIR__ . '/mixins.less');
-
-        $this->module->analyzer(__DIR__ . '/variables.less', 'less', $variables);
-        $this->module->analyzer(__DIR__ . '/mixins.less', 'less', $mixins);
         $this->module->compiler(__DIR__ . '/test.less', $extension, $content);
 
         $this->assertEquals($equals, $content);

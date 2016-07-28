@@ -1,7 +1,6 @@
 {
   "name": "samsonphp/less",
   "author": "Vitaly Iegorov <egorov@samsonos.com>",
-  "minimum-stability": "dev",
   "require": {
     "samsonphp/event": "1.*",
     "samsonos/php_core": "*",
