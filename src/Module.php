@@ -3,13 +3,11 @@ namespace samsonphp\less;
 
 use samson\core\ExternalModule;
 use samsonphp\event\Event;
+use samsonphp\resource\exception\ResourceNotFound;
 use samsonphp\resource\Router;
 
 /**
  * SamsonPHP LESS compiler module.
- *
- * TODO: Nested mixin parsing to remove file name mixin hack
- * TODO: Switch to independent generic file system manager
  *
  * @author Vitaly Iegorov <egorov@samsonos.com>
  */
@@ -17,7 +15,6 @@ class Module extends ExternalModule
 {
     /** LESS mixin declaration pattern */
     const P_IMPORT_DECLARATION = '/@import\s+(\'|\")(?<path>[^\'\"]+)(\'|\");/';
-
 
     /** @var \lessc LESS compiler */
     protected $less;
@@ -42,11 +39,13 @@ class Module extends ExternalModule
     }
 
     /**
-     * Replace @import in content of the file
+     * Recursively replace @import in content of the LESS file
      *
      * @param string $resource Resource full path
-     * @param string $content less file content
-     * @return string
+     * @param string $content  less file content
+     *
+     * @return string Content of LESS file with included @imported resources
+     * @throws ResourceNotFound If importing resource could not be found
      */
     protected function readImport($resource, $content)
     {
@@ -54,14 +53,16 @@ class Module extends ExternalModule
         $matches = [];
         if (preg_match_all(self::P_IMPORT_DECLARATION, $content, $matches)) {
             for ($i=0, $size = count($matches[0]); $i < $size; $i++) {
+                // Build absolute path to imported resource
                 $path = dirname($resource).DIRECTORY_SEPARATOR.$matches['path'][$i];
-                $path = (is_file($path))?$path:$path.'.less';
-                $path = realpath($path);
 
-                $newContent = file_get_contents($path);
+                // Append .less extension according to standard
+                if (false === ($path = realpath(is_file($path)?$path:$path.'.less'))) {
+                    throw new ResourceNotFound('Cannot import file: '.$matches['path'][$i]);
+                }
 
-                // Replace path in LESS @import command
-                $content = str_replace($matches[0][$i], $this->readImport($path, $newContent), $content);
+                // Replace path in LESS @import command with recursive call to this function
+                $content = str_replace($matches[0][$i], $this->readImport($path, file_get_contents($path)), $content);
             }
         }
 
@@ -81,7 +82,6 @@ class Module extends ExternalModule
     {
         if ($extension === 'less') {
             try {
-
                 // Rewrite imports
                 $content = $this->readImport($resource, $content);
 
