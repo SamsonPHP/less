@@ -8,6 +8,7 @@ namespace samsonphp\less\tests;
 use samson\core\Core;
 use samsonframework\resource\ResourceMap;
 use samsonphp\less\Module;
+use samsonphp\resource\exception\ResourceNotFound;
 
 // Include framework constants
 require('vendor/samsonos/php_core/src/constants.php');
@@ -31,8 +32,6 @@ class ModuleTest extends \PHPUnit_Framework_TestCase
         $this->module->cachedLESS = __DIR__.'/cache/cache.less';
         $this->module->prepare();
     }
-    
-    
 
     public function testGenerator()
     {
@@ -59,12 +58,23 @@ CSS;
 
     public function testException()
     {
-        $this->setExpectedException('\Exception');
+        $this->setExpectedException(\Exception::class);
 
         $this->module->prepare();
 
         $content = file_get_contents(__DIR__ . '/wrong.less');;
         $extension = 'less';
         $this->module->compiler(__DIR__ . '/wrong.less', $extension, $content);
+    }
+
+    public function testImportingException()
+    {
+        $this->setExpectedException(\Exception::class);
+
+        $this->module->prepare();
+
+        $content = file_get_contents(__DIR__ . '/wrongImport.less');;
+        $extension = 'less';
+        $this->module->compiler(__DIR__ . '/wrongImport.less', $extension, $content);
     }
 }
