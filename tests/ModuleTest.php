@@ -66,10 +66,13 @@ CSS;
 
         $dependencies = unserialize(file_get_contents(__DIR__ . '/dependencies'));
 
-        $this->assertArrayHasKey(__DIR__ . '/test.less', $dependencies);
-        $this->assertArrayHasKey(__DIR__ . '/mixins.less', $dependencies[__DIR__ . '/test.less']);
-        $this->assertArrayHasKey(__DIR__ . '/dependency.less', $dependencies[__DIR__ . '/test.less']);
-        $this->assertArrayHasKey(__DIR__ . '/variables.less', $dependencies[__DIR__ . '/test.less'][__DIR__ . '/mixins.less']);
+        $this->assertArrayHasKey(__DIR__ . '/dependency.less', $dependencies);
+        $this->assertArrayHasKey(__DIR__ . '/variables.less', $dependencies);
+        $this->assertArrayHasKey(__DIR__ . '/mixins.less', $dependencies);
+        $this->assertArrayHasKey(__DIR__ . '/test.less', $dependencies[__DIR__ . '/mixins.less']);
+        $this->assertArrayHasKey(__DIR__ . '/mixins.less', $dependencies[__DIR__ . '/variables.less']);
+        $this->assertArrayHasKey(__DIR__ . '/test.less', $dependencies[__DIR__ . '/dependency.less']);
+        $this->assertArrayHasKey(__DIR__ . '/variables.less', $dependencies[__DIR__ . '/dependency.less']);
     }
 
     public function testExistingDependencies()
@@ -79,10 +82,13 @@ CSS;
 
         $dependencies = unserialize(file_get_contents(__DIR__ . '/dependencies'));
 
-        $this->assertArrayHasKey(__DIR__ . '/test.less', $dependencies);
-        $this->assertArrayHasKey(__DIR__ . '/mixins.less', $dependencies[__DIR__ . '/test.less']);
-        $this->assertArrayHasKey(__DIR__ . '/dependency.less', $dependencies[__DIR__ . '/test.less']);
-        $this->assertArrayHasKey(__DIR__ . '/variables.less', $dependencies[__DIR__ . '/test.less'][__DIR__ . '/mixins.less']);
+        $this->assertArrayHasKey(__DIR__ . '/dependency.less', $dependencies);
+        $this->assertArrayHasKey(__DIR__ . '/variables.less', $dependencies);
+        $this->assertArrayHasKey(__DIR__ . '/mixins.less', $dependencies);
+        $this->assertArrayHasKey(__DIR__ . '/test.less', $dependencies[__DIR__ . '/mixins.less']);
+        $this->assertArrayHasKey(__DIR__ . '/mixins.less', $dependencies[__DIR__ . '/variables.less']);
+        $this->assertArrayHasKey(__DIR__ . '/test.less', $dependencies[__DIR__ . '/dependency.less']);
+        $this->assertArrayHasKey(__DIR__ . '/variables.less', $dependencies[__DIR__ . '/dependency.less']);
     }
 
     public function testException()

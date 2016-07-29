@@ -90,30 +90,6 @@ class Module extends ExternalModule
     }
 
     /**
-     *
-     * @param       $resource
-     * @param       $dependencies
-     * @param array $content
-     *
-     * @return array
-     */
-    protected function compileChildren($resource, $dependencies, array $content = [])
-    {
-        if (array_key_exists($resource, $dependencies)) {
-            foreach ($dependencies[$resource] as $dependency => $children) {
-                // Compile child LESS content to CSS
-                $content[$dependency] = $this->less->compile(file_get_contents($dependency));
-
-                if (is_array($children)) {
-                    $this->compileChildren($dependency, $children, $content);
-                }
-            }
-        }
-
-        return $content;
-    }
-
-    /**
      * LESS resource compiler.
      *
      * @param string $resource  Resource full path
@@ -131,9 +107,6 @@ class Module extends ExternalModule
 
                 // Compile LESS content to CSS
                 $content = $this->less->compile($content);
-
-                // Compile nested
-                $changedChildren = $this->compileChildren($resource, $this->dependencies);
 
                 // Switch extension
                 $extension = 'css';
