@@ -18,6 +18,7 @@ class Module extends ExternalModule
     const P_IMPORT_DECLARATION = '/@import\s+(\'|\")(?<path>[^\'\"]+)(\'|\");/';
 
     /** LESS resource importing dependencies file name */
+    /** LESS resource importing dependencies file name */
     const DEPENDENCY_CACHE = 'dependencies';
 
     /** @var array LESS resources dependencies */
