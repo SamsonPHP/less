@@ -95,10 +95,11 @@ class Module extends ExternalModule
      * @param string $resource  Resource full path
      * @param string $extension Resource extension
      * @param string $content   Compiled output resource content
+     * @param array $dependencies Collection of compiled resource dependent modules
      *
      * @throws \Exception
      */
-    public function compiler($resource, &$extension, &$content)
+    public function compiler($resource, &$extension, &$content, &$dependencies)
     {
         if ($extension === 'less') {
             try {
@@ -110,6 +111,9 @@ class Module extends ExternalModule
 
                 // Switch extension
                 $extension = 'css';
+
+                // Store dependencies
+                $dependencies = $this->dependencies;
             } catch (\Exception $e) {
                 //$errorFile = 'cache/error_resourcer'.microtime(true).'.less';
                 //file_put_contents($errorFile, $output);
