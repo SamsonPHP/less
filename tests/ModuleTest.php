@@ -29,7 +29,7 @@ class ModuleTest extends \PHPUnit_Framework_TestCase
 
     public function testPrepare()
     {
-        $this->module->cachedLESS = __DIR__.'/cache/cache.less';
+        $this->module->cachedLESS = __DIR__ . '/cache/cache.less';
         $this->module->prepare();
     }
 
@@ -60,49 +60,49 @@ CSS;
     {
         $content = file_get_contents(__DIR__ . '/test.less');
         $extension = 'less';
-        $this->module->prepare(['cachePath' => __DIR__.'/']);
+        $this->module->prepare(['cachePath' => __DIR__ . '/']);
         $this->module->compiler(__DIR__ . '/test.less', $extension, $content);
         $this->module->cacheDependencies();
 
-        $dependencies = unserialize(file_get_contents(__DIR__.'/dependencies'));
+        $dependencies = unserialize(file_get_contents(__DIR__ . '/dependencies'));
 
-        $this->assertArrayHasKey(__DIR__.'/test.less', $dependencies);
-        $this->assertArrayHasKey(__DIR__.'/mixins.less', $dependencies[__DIR__.'/test.less']);
-        $this->assertArrayHasKey(__DIR__.'/dependency.less', $dependencies[__DIR__.'/test.less']);
-        $this->assertArrayHasKey(__DIR__.'/variables.less', $dependencies[__DIR__.'/test.less'][__DIR__.'/mixins.less']);
+        $this->assertArrayHasKey(__DIR__ . '/test.less', $dependencies);
+        $this->assertArrayHasKey(__DIR__ . '/mixins.less', $dependencies[__DIR__ . '/test.less']);
+        $this->assertArrayHasKey(__DIR__ . '/dependency.less', $dependencies[__DIR__ . '/test.less']);
+        $this->assertArrayHasKey(__DIR__ . '/variables.less', $dependencies[__DIR__ . '/test.less'][__DIR__ . '/mixins.less']);
     }
 
     public function testExistingDependencies()
     {
-        $this->module->prepare(['cachePath' => __DIR__.'/']);
+        $this->module->prepare(['cachePath' => __DIR__ . '/']);
         $this->module->cacheDependencies();
 
-        $dependencies = unserialize(file_get_contents(__DIR__.'/dependencies'));
+        $dependencies = unserialize(file_get_contents(__DIR__ . '/dependencies'));
 
-        $this->assertArrayHasKey(__DIR__.'/test.less', $dependencies);
-        $this->assertArrayHasKey(__DIR__.'/mixins.less', $dependencies[__DIR__.'/test.less']);
-        $this->assertArrayHasKey(__DIR__.'/dependency.less', $dependencies[__DIR__.'/test.less']);
-        $this->assertArrayHasKey(__DIR__.'/variables.less', $dependencies[__DIR__.'/test.less'][__DIR__.'/mixins.less']);
+        $this->assertArrayHasKey(__DIR__ . '/test.less', $dependencies);
+        $this->assertArrayHasKey(__DIR__ . '/mixins.less', $dependencies[__DIR__ . '/test.less']);
+        $this->assertArrayHasKey(__DIR__ . '/dependency.less', $dependencies[__DIR__ . '/test.less']);
+        $this->assertArrayHasKey(__DIR__ . '/variables.less', $dependencies[__DIR__ . '/test.less'][__DIR__ . '/mixins.less']);
     }
 
     public function testException()
     {
-        $this->setExpectedException(\Exception::class);
+        $this->expectException(\Exception::class);
 
         $this->module->prepare();
 
-        $content = file_get_contents(__DIR__ . '/wrong.less');;
+        $content = file_get_contents(__DIR__ . '/wrong.less');
         $extension = 'less';
         $this->module->compiler(__DIR__ . '/wrong.less', $extension, $content);
     }
 
     public function testImportingException()
     {
-        $this->setExpectedException(\Exception::class);
+        $this->expectException(\Exception::class);
 
         $this->module->prepare();
 
-        $content = file_get_contents(__DIR__ . '/wrongImport.less');;
+        $content = file_get_contents(__DIR__ . '/wrongImport.less');
         $extension = 'less';
         $this->module->compiler(__DIR__ . '/wrongImport.less', $extension, $content);
     }
