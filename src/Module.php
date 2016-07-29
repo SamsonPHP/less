@@ -60,12 +60,11 @@ class Module extends ExternalModule
      *
      * @param string $resource Resource full path
      * @param string $content  less file content
-     * @param array  $tree LESS Tree array pointer
      *
      * @return string Content of LESS file with included @imported resources
      * @throws ResourceNotFound If importing resource could not be found
      */
-    protected function readImport($resource, $content, &$tree)
+    protected function readImport($resource, $content)
     {
         // Rewrite imports
         $matches = [];
@@ -79,8 +78,35 @@ class Module extends ExternalModule
                     throw new ResourceNotFound('Cannot import file: '.$matches['path'][$i]);
                 }
 
+                // Add parent to child dependency
+                $this->dependencies[$path][$resource] = [];
+
                 // Replace path in LESS @import command with recursive call to this function
-                $content = str_replace($matches[0][$i], $this->readImport($path, file_get_contents($path), $tree[$path]), $content);
+                $content = str_replace($matches[0][$i], $this->readImport($path, file_get_contents($path)), $content);
+            }
+        }
+
+        return $content;
+    }
+
+    /**
+     *
+     * @param       $resource
+     * @param       $dependencies
+     * @param array $content
+     *
+     * @return array
+     */
+    protected function compileChildren($resource, $dependencies, array $content = [])
+    {
+        if (array_key_exists($resource, $dependencies)) {
+            foreach ($dependencies[$resource] as $dependency => $children) {
+                // Compile child LESS content to CSS
+                $content[$dependency] = $this->less->compile(file_get_contents($dependency));
+
+                if (is_array($children)) {
+                    $this->compileChildren($dependency, $children, $content);
+                }
             }
         }
 
@@ -101,10 +127,13 @@ class Module extends ExternalModule
         if ($extension === 'less') {
             try {
                 // Rewrite imports
-                $content = $this->readImport($resource, $content, $this->dependencies[$resource]);
+                $content = $this->readImport($resource, $content);
 
                 // Compile LESS content to CSS
                 $content = $this->less->compile($content);
+
+                // Compile nested
+                $changedChildren = $this->compileChildren($resource, $this->dependencies);
 
                 // Switch extension
                 $extension = 'css';
