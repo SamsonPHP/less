@@ -18,7 +18,6 @@ class Module extends ExternalModule
     const P_IMPORT_DECLARATION = '/@import\s+(\'|\")(?<path>[^\'\"]+)(\'|\");/';
 
     /** LESS resource importing dependencies file name */
-    /** LESS resource importing dependencies file name */
     const DEPENDENCY_CACHE = 'dependencies';
 
     /** @var array LESS resources dependencies */
@@ -44,6 +43,7 @@ class Module extends ExternalModule
         $this->less = new \lessc;
 
         Event::subscribe(Router::E_RESOURCE_COMPILE, [$this, 'compiler']);
+        Event::subscribe(Router::E_FINISHED, [$this, 'cacheDependencies']);
 
         return parent::prepare();
     }
