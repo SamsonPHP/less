@@ -10,7 +10,6 @@ use samsonphp\resource\Router;
 
 /**
  * SamsonPHP LESS compiler module.
- * TODO: Change to file operations to FileManagerInterface
  *
  * @author Vitaly Iegorov <egorov@samsonos.com>
  */
