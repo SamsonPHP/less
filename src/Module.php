@@ -2,6 +2,8 @@
 namespace samsonphp\less;
 
 use samson\core\ExternalModule;
+use samsonframework\filemanager\FileManagerInterface;
+use samsonframework\localfilemanager\LocalFileManager;
 use samsonphp\event\Event;
 use samsonphp\resource\exception\ResourceNotFound;
 use samsonphp\resource\Router;
@@ -29,15 +31,21 @@ class Module extends ExternalModule
     /** @var \lessc LESS compiler */
     protected $less;
 
+    /** @var FileManagerInterface */
+    protected $fileManager;
+
     /** SamsonFramework load preparation stage handler */
     public function prepare(array $params = [])
     {
         $moduleCachePath = array_key_exists('cachePath', $params) ? $params['cachePath'] : $this->cache_path;
         $this->dependencyCache = $moduleCachePath.self::DEPENDENCY_CACHE;
 
+        // Load file manager
+        $this->fileManager = array_key_exists('fileManager', $params) ? $params['fileManager'] : new LocalFileManager();
+
         // Read previous cache file
-        if (file_exists($this->dependencyCache)) {
-            $this->dependencies = unserialize(file_get_contents($this->dependencyCache));
+        if ($this->fileManager->exists($this->dependencyCache)) {
+            $this->dependencies = unserialize($this->fileManager->read($this->dependencyCache));
         }
 
         $this->less = new \lessc;
@@ -53,12 +61,7 @@ class Module extends ExternalModule
      */
     public function cacheDependencies()
     {
-        // Create folder
-        if (!file_exists(dirname($this->dependencyCache))) {
-            @mkdir(dirname($this->dependencyCache), 0777, true);
-        }
-
-        file_put_contents($this->dependencyCache, serialize($this->dependencies));
+        $this->fileManager->write($this->dependencyCache, serialize($this->dependencies));
     }
 
     /**
@@ -80,7 +83,7 @@ class Module extends ExternalModule
                 $path = dirname($resource).DIRECTORY_SEPARATOR.$matches['path'][$i];
 
                 // Append .less extension according to standard
-                if (false === ($path = realpath(is_file($path)?$path:$path.'.less'))) {
+                if (false === ($path = realpath($this->fileManager->exists($path)?$path:$path.'.less'))) {
                     throw new ResourceNotFound('Cannot import file: '.$matches['path'][$i]);
                 }
 
@@ -88,7 +91,7 @@ class Module extends ExternalModule
                 $this->dependencies[$path][$resource] = [];
 
                 // Replace path in LESS @import command with recursive call to this function
-                $content = str_replace($matches[0][$i], $this->readImport($path, file_get_contents($path)), $content);
+                $content = str_replace($matches[0][$i], $this->readImport($path, $this->fileManager->read($path)), $content);
             }
         }
 
