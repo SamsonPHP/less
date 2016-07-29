@@ -8,6 +8,7 @@ use samsonphp\resource\Router;
 
 /**
  * SamsonPHP LESS compiler module.
+ * TODO: Change to file operations to FileManagerInterface
  *
  * @author Vitaly Iegorov <egorov@samsonos.com>
  */
@@ -22,7 +23,7 @@ class Module extends ExternalModule
     /** @var array LESS resources dependencies */
     public $dependencies = [];
 
-    /** @var  Path to LESS resources dependencies cache file */
+    /** @var string Path to LESS resources dependencies cache file */
     protected $dependencyCache;
 
     /** @var \lessc LESS compiler */
@@ -52,6 +53,11 @@ class Module extends ExternalModule
      */
     public function cacheDependencies()
     {
+        // Create folder
+        if (!file_exists(dirname($this->dependencyCache))) {
+            @mkdir(dirname($this->dependencyCache), 0777, true);
+        }
+
         file_put_contents($this->dependencyCache, serialize($this->dependencies));
     }
 
@@ -112,8 +118,10 @@ class Module extends ExternalModule
                 // Switch extension
                 $extension = 'css';
 
-                // Store dependencies
-                $dependencies = $this->dependencies;
+                // Return dependencies for this resource
+                $dependencies = array_key_exists($resource, $this->dependencies)
+                    ? $this->dependencies[$resource]
+                    : [];
             } catch (\Exception $e) {
                 //$errorFile = 'cache/error_resourcer'.microtime(true).'.less';
                 //file_put_contents($errorFile, $output);
