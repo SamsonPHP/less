@@ -16,20 +16,43 @@ class Module extends ExternalModule
     /** LESS mixin declaration pattern */
     const P_IMPORT_DECLARATION = '/@import\s+(\'|\")(?<path>[^\'\"]+)(\'|\");/';
 
+    /** LESS resource importing dependencies file name */
+    const DEPENDENCY_CACHE = 'dependencies';
+
     /** @var array LESS resources dependencies */
     public $dependencies = [];
+
+    /** @var  Path to LESS resources dependencies cache file */
+    protected $dependencyCache;
 
     /** @var \lessc LESS compiler */
     protected $less;
 
     /** SamsonFramework load preparation stage handler */
-    public function prepare()
+    public function prepare(array $params = [])
     {
-        Event::subscribe(Router::E_RESOURCE_COMPILE, [$this, 'compiler']);
+        $moduleCachePath = array_key_exists('cachePath', $params) ? $params['cachePath'] : $this->cache_path;
+        $this->dependencyCache = $moduleCachePath.self::DEPENDENCY_CACHE;
+
+        // Read previous cache file
+        if (file_exists($this->dependencyCache)) {
+            $this->dependencies = unserialize(file_get_contents($this->dependencyCache));
+        }
 
         $this->less = new \lessc;
 
-        return true;
+        Event::subscribe(Router::E_RESOURCE_COMPILE, [$this, 'compiler']);
+        Event::subscribe(Router::E_FINISHED, [$this, 'cacheDependencies']);
+
+        return parent::prepare();
+    }
+
+    /**
+     * Cache LESS resources importing dependency trees.
+     */
+    public function cacheDependencies()
+    {
+        file_put_contents($this->dependencyCache, serialize($this->dependencies));
     }
 
     /**

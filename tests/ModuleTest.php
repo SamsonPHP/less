@@ -54,10 +54,35 @@ CSS;
         $this->module->compiler(__DIR__ . '/test.less', $extension, $content);
 
         $this->assertEquals($equals, $content);
-        $this->assertArrayHasKey(__DIR__.'/test.less', $this->module->dependencies);
-        $this->assertArrayHasKey(__DIR__.'/mixins.less', $this->module->dependencies[__DIR__.'/test.less']);
-        $this->assertArrayHasKey(__DIR__.'/dependency.less', $this->module->dependencies[__DIR__.'/test.less']);
-        $this->assertArrayHasKey(__DIR__.'/variables.less', $this->module->dependencies[__DIR__.'/test.less'][__DIR__.'/mixins.less']);
+    }
+
+    public function testDependencies()
+    {
+        $content = file_get_contents(__DIR__ . '/test.less');
+        $extension = 'less';
+        $this->module->prepare(['cachePath' => __DIR__.'/']);
+        $this->module->compiler(__DIR__ . '/test.less', $extension, $content);
+        $this->module->cacheDependencies();
+
+        $dependencies = unserialize(file_get_contents(__DIR__.'/dependencies'));
+
+        $this->assertArrayHasKey(__DIR__.'/test.less', $dependencies);
+        $this->assertArrayHasKey(__DIR__.'/mixins.less', $dependencies[__DIR__.'/test.less']);
+        $this->assertArrayHasKey(__DIR__.'/dependency.less', $dependencies[__DIR__.'/test.less']);
+        $this->assertArrayHasKey(__DIR__.'/variables.less', $dependencies[__DIR__.'/test.less'][__DIR__.'/mixins.less']);
+    }
+
+    public function testExistingDependencies()
+    {
+        $this->module->prepare(['cachePath' => __DIR__.'/']);
+        $this->module->cacheDependencies();
+
+        $dependencies = unserialize(file_get_contents(__DIR__.'/dependencies'));
+
+        $this->assertArrayHasKey(__DIR__.'/test.less', $dependencies);
+        $this->assertArrayHasKey(__DIR__.'/mixins.less', $dependencies[__DIR__.'/test.less']);
+        $this->assertArrayHasKey(__DIR__.'/dependency.less', $dependencies[__DIR__.'/test.less']);
+        $this->assertArrayHasKey(__DIR__.'/variables.less', $dependencies[__DIR__.'/test.less'][__DIR__.'/mixins.less']);
     }
 
     public function testException()
