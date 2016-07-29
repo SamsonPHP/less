@@ -43,7 +43,6 @@ class Module extends ExternalModule
         $this->less = new \lessc;
 
         Event::subscribe(Router::E_RESOURCE_COMPILE, [$this, 'compiler']);
-        Event::subscribe(Router::E_FINISHED, [$this, 'cacheDependencies']);
 
         return parent::prepare();
     }
