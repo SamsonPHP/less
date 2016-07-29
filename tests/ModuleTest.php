@@ -51,7 +51,8 @@ CSS;
 
         $content = file_get_contents(__DIR__ . '/test.less');
         $extension = 'less';
-        $this->module->compiler(__DIR__ . '/test.less', $extension, $content);
+        $deps = [];
+        $this->module->compiler(__DIR__ . '/test.less', $extension, $content, $deps);
 
         $this->assertEquals($equals, $content);
     }
@@ -60,8 +61,9 @@ CSS;
     {
         $content = file_get_contents(__DIR__ . '/test.less');
         $extension = 'less';
+        $deps = [];
         $this->module->prepare(['cachePath' => __DIR__ . '/']);
-        $this->module->compiler(__DIR__ . '/test.less', $extension, $content);
+        $this->module->compiler(__DIR__ . '/test.less', $extension, $content, $deps);
         $this->module->cacheDependencies();
 
         $dependencies = unserialize(file_get_contents(__DIR__ . '/dependencies'));
@@ -99,7 +101,8 @@ CSS;
 
         $content = file_get_contents(__DIR__ . '/wrong.less');
         $extension = 'less';
-        $this->module->compiler(__DIR__ . '/wrong.less', $extension, $content);
+        $deps = [];
+        $this->module->compiler(__DIR__ . '/wrong.less', $extension, $content, $deps);
     }
 
     public function testImportingException()
@@ -110,6 +113,7 @@ CSS;
 
         $content = file_get_contents(__DIR__ . '/wrongImport.less');
         $extension = 'less';
-        $this->module->compiler(__DIR__ . '/wrongImport.less', $extension, $content);
+        $deps = [];
+        $this->module->compiler(__DIR__ . '/wrongImport.less', $extension, $content, $deps);
     }
 }
