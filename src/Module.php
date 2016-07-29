@@ -16,17 +16,11 @@ class Module extends ExternalModule
     /** LESS mixin declaration pattern */
     const P_IMPORT_DECLARATION = '/@import\s+(\'|\")(?<path>[^\'\"]+)(\'|\");/';
 
+    /** @var array LESS resources dependencies */
+    public $dependencies = [];
+
     /** @var \lessc LESS compiler */
     protected $less;
-
-    /** @var array Collection of LESS variables */
-    protected $variables = [];
-
-    /** @var array Collection of LESS mixins */
-    protected $mixins = [];
-
-    /** @var string Cached LESS code */
-    protected $lessCode;
 
     /** SamsonFramework load preparation stage handler */
     public function prepare()
@@ -43,11 +37,12 @@ class Module extends ExternalModule
      *
      * @param string $resource Resource full path
      * @param string $content  less file content
+     * @param array  $tree LESS Tree array pointer
      *
      * @return string Content of LESS file with included @imported resources
      * @throws ResourceNotFound If importing resource could not be found
      */
-    protected function readImport($resource, $content)
+    protected function readImport($resource, $content, &$tree)
     {
         // Rewrite imports
         $matches = [];
@@ -62,7 +57,7 @@ class Module extends ExternalModule
                 }
 
                 // Replace path in LESS @import command with recursive call to this function
-                $content = str_replace($matches[0][$i], $this->readImport($path, file_get_contents($path)), $content);
+                $content = str_replace($matches[0][$i], $this->readImport($path, file_get_contents($path), $tree[$path]), $content);
             }
         }
 
@@ -83,7 +78,7 @@ class Module extends ExternalModule
         if ($extension === 'less') {
             try {
                 // Rewrite imports
-                $content = $this->readImport($resource, $content);
+                $content = $this->readImport($resource, $content, $this->dependencies[$resource]);
 
                 // Compile LESS content to CSS
                 $content = $this->less->compile($content);

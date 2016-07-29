@@ -54,6 +54,10 @@ CSS;
         $this->module->compiler(__DIR__ . '/test.less', $extension, $content);
 
         $this->assertEquals($equals, $content);
+        $this->assertArrayHasKey(__DIR__.'/test.less', $this->module->dependencies);
+        $this->assertArrayHasKey(__DIR__.'/mixins.less', $this->module->dependencies[__DIR__.'/test.less']);
+        $this->assertArrayHasKey(__DIR__.'/dependency.less', $this->module->dependencies[__DIR__.'/test.less']);
+        $this->assertArrayHasKey(__DIR__.'/variables.less', $this->module->dependencies[__DIR__.'/test.less'][__DIR__.'/mixins.less']);
     }
 
     public function testException()
