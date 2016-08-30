@@ -64,12 +64,12 @@ class Module extends ExternalModule
     }
 
     /**
-     * Recursively replace @import in content of the LESS file
+     * Recursively replace import in content of the LESS file
      *
      * @param string $resource Resource full path
      * @param string $content  less file content
      *
-     * @return string Content of LESS file with included @imported resources
+     * @return string Content of LESS file with included imported resources
      * @throws ResourceNotFound If importing resource could not be found
      */
     protected function readImport($resource, $content)
